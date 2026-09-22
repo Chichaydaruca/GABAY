@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f2eee6;
+  --color-paper-2: #e7e1d4;
+  --color-ink: #0e1633;
+  --color-ink-2: #1b2450;
+  --color-hud: #2fe2e6;
+  --color-hud-deep: #12b9bd;
+  --color-navy: #1b2c8a;
+  --color-pin: #e0342a;
+  --color-warm: #6a6757;
+  --color-glass: #070912;
+
+  --font-display: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+
+:root {
+  color-scheme: light;
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-hud);
+  color: #001314;
+}
+
+.font-mono2 {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.display-tight {
+  letter-spacing: -0.045em;
+  line-height: 0.86;
+  font-weight: 800;
+}
+
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.35'/></svg>");
+}
+
+/* ---------- HUD / AR motion ---------- */
+
+@keyframes gabay-flow {
+  0% {
+    transform: translate(-50%, 0) scale(0.18);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.95;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 46vh) scale(1.55);
+    opacity: 0;
+  }
+}
+
+.chevron-flow {
+  position: absolute;
+  left: 50%;
+  top: 34vh;
+  transform-origin: 50% 50%;
+  animation: gabay-flow 3.6s linear infinite;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 0 10px rgba(47, 226, 230, 0.55));
+}
+
+@keyframes gabay-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.pin-bob {
+  animation: gabay-bob 2.4s var(--ease-snap) infinite;
+}
+
+@keyframes gabay-scanline {
+  0% {
+    transform: translateY(-2%);
+  }
+  50% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(-2%);
+  }
+}
+
+.scanline {
+  animation: gabay-scanline 2.6s ease-in-out infinite;
+}
+
+@keyframes gabay-snap-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.snap-in {
+  animation: gabay-snap-in 0.18s var(--ease-snap) both;
+}
+
+@keyframes gabay-zoom {
+  from {
+    transform: scale(1.04) translateY(0);
+  }
+  to {
+    transform: scale(1.14) translateY(-1.5%);
+  }
+}
+
+.slow-zoom {
+  animation: gabay-zoom 26s ease-in-out infinite alternate;
+}
+
+.hud-btn {
+  transition:
+    transform 0.12s var(--ease-snap),
+    background-color 0.12s linear,
+    box-shadow 0.12s linear;
+}
+.hud-btn:hover {
+  transform: translateY(-1px);
+}
+.hud-btn:active {
+  transform: translateY(1px);
+}
+.hud-btn:focus-visible,
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-hud);
+  outline-offset: 2px;
+}
+
+/* directory rows */
+.dir-row {
+  transition:
+    background-color 0.14s linear,
+    padding-left 0.16s var(--ease-snap);
+}
+.dir-row:hover {
+  background: #eae4d7;
+  padding-left: 0.4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
