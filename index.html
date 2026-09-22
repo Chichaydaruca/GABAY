@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GABAY — AR Assistant for Information &amp; Campus Navigation</title>
+<meta name="description" content="GABAY: augmented reality assistant for campus information and navigation. Standalone HTML/CSS/JS build." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#home">
+    <svg viewBox="0 0 64 64" class="mark" role="img" aria-label="GABAY">
+      <path d="M32 4C20.4 4 11 13.4 11 25c0 6.4 3.1 11.6 6.9 16.2C21.9 46.3 27 51.4 32 58c5-6.6 10.1-11.7 14.1-16.8C49.9 36.6 53 31.4 53 25 53 13.4 43.6 4 32 4Z" fill="#0e1633"/>
+      <path d="M18 26.5 32 39l14-12.5-6.6 0L32 31l-7.4-4.5Z" fill="#2fe2e6"/>
+      <path d="M22 21.5 32 26l10-4.5-4.2 0L32 23l-5.8-1.5Z" fill="#2fe2e6" opacity=".55"/>
+      <circle cx="32" cy="45.5" r="3.4" fill="#e0342a"/>
+    </svg>
+    <span>
+      <strong>GABAY</strong>
+      <small>AR Campus Assistant</small>
+    </span>
+  </a>
+  <nav class="nav">
+    <a href="#directory">Directory</a>
+    <a href="#scan">Scan QR</a>
+    <a href="#about">Files</a>
+  </nav>
+  <a class="btn btn-navy" href="#ar">START AR &rarr;</a>
+</header>
+
+<main>
+
+<!-- ============================ HOME ============================ -->
+<section id="home" class="view is-active">
+  <div class="hero">
+    <div class="hero-copy">
+      <p class="label">Pilot &middot; Main Building &middot; Ground Floor</p>
+      <h1 class="display">GABAY</h1>
+      <p class="lede">An augmented reality assistant for <mark>information</mark> and <mark>campus navigation</mark>. Point your camera at a QR plate and the chevrons lead you to the door.</p>
+      <div class="cta">
+        <a class="btn btn-navy btn-lg" href="#ar">START AR NAVIGATION &rarr;</a>
+        <a class="btn btn-outline btn-lg" href="#scan">SCAN A QR</a>
+      </div>
+      <dl class="stats">
+        <div><dd id="stat-locations">15</dd><dt>locations</dt></div>
+        <div><dd>11</dd><dt>waypoints</dt></div>
+        <div><dd>3</dd><dt>file types</dt></div>
+      </dl>
+    </div>
+    <div class="hero-plan">
+      <svg id="hero-plan" viewBox="0 0 1000 640" role="img" aria-label="Main Building ground floor plan"></svg>
+    </div>
+  </div>
+
+  <div id="directory" class="section">
+    <div class="section-head">
+      <div>
+        <p class="label">Directory</p>
+        <h2 class="display display-md">WHERE ARE YOU GOING?</h2>
+      </div>
+      <input id="search" type="search" placeholder="Search: Room 104, restroom, clinic…" aria-label="Search the directory" />
+    </div>
+    <div class="dir-head">
+      <span>Code</span><span>Name &amp; details</span><span>Location</span><span>Action</span>
+    </div>
+    <ul id="dir-list" class="dir-list"></ul>
+    <p id="dir-empty" class="empty" hidden>No results. Try “Room 104”, “restroom”, or “Library”.</p>
+  </div>
+
+  <div id="about" class="section split">
+    <div>
+      <p class="label">Files</p>
+      <h2 class="display display-md">PLAIN HTML,<br />CSS &amp; JS</h2>
+      <p class="muted">This page is the standalone build of GABAY — no framework, no build step. The same directory, routing engine and AR overlay run from three files you can open by double-clicking them.</p>
+      <ul class="filelist">
+        <li><a href="index.html" download><code>index.html</code></a> — structure &amp; views</li>
+        <li><a href="styles.css" download><code>styles.css</code></a> — signage palette, HUD &amp; chevron motion</li>
+        <li><a href="app.js" download><code>app.js</code></a> — directory, Dijkstra routing, AR + QR logic</li>
+      </ul>
+      <a class="btn btn-outline" href="index.html" download>DOWNLOAD index.html</a>
+      <a class="btn btn-outline" href="styles.css" download>DOWNLOAD styles.css</a>
+      <a class="btn btn-outline" href="app.js" download>DOWNLOAD app.js</a>
+    </div>
+    <div class="panel-dark">
+      <p class="label hud">Gabay · System</p>
+      <ul class="specs">
+        <li><span>Directory</span><span id="spec-count">15 locations</span></li>
+        <li><span>Graph</span><span>11 nodes / 10 edges</span></li>
+        <li><span>Algorithm</span><span>Dijkstra + heading deltas</span></li>
+        <li><span>QR format</span><span>GABAY:&lt;CODE&gt;</span></li>
+        <li><span>Palette</span><span>#2FE2E6 · #1B2C8A · #E0342A</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ AR ============================ -->
+<section id="ar" class="view ar-view">
+  <div class="ar-cam">
+    <img src="../images/hallway.jpg" alt="" class="ar-cam-img" />
+    <div class="ar-scrim"></div>
+  </div>
+
+  <div id="chevrons" class="chevrons" aria-hidden="true"></div>
+
+  <div id="ar-pin" class="ar-pin" hidden>
+    <svg width="86" height="112" viewBox="0 0 48 64">
+      <path d="M24 2C12.4 2 3 11.4 3 23c0 14 21 39 21 39s21-25 21-39C45 11.4 35.6 2 24 2Z" fill="#e0342a" stroke="#0e1633" stroke-width="2.5"/>
+      <circle cx="24" cy="22" r="8.5" fill="#0e1633"/><circle cx="24" cy="22" r="5" fill="#f2eee6"/>
+    </svg>
+  </div>
+
+  <div class="reticle" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+  <div class="hud-top">
+    <div class="dest-wrap">
+      <button id="dest-toggle" class="chip" aria-expanded="false">
+        <span id="dest-label">Select Destination</span>
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 8l8 8 8-8" fill="none" stroke="#070912" stroke-width="3"/></svg>
+      </button>
+      <div id="dest-panel" class="dest-panel" hidden>
+        <p class="label panel-head">Select Destination</p>
+        <ul id="dest-list"></ul>
+      </div>
+    </div>
+    <div class="hud-actions">
+      <button class="btn btn-navy" id="ar-back">&larr; Back</button>
+      <button class="btn btn-navy btn-sm" id="ar-clear">Clear<br class="mob" /> Navigation</button>
+    </div>
+  </div>
+
+  <p class="hud-status"><span class="rec"></span> AR ACTIVE <span class="sep">|</span> <span id="hud-start">START: C</span> <span class="sep">|</span> DEMO FEED</p>
+
+  <div id="ar-idle" class="ar-idle">
+    <p class="label hud">Gabay · AR Ready</p>
+    <p class="display display-sm">SELECT A DESTINATION</p>
+    <p class="muted-light">Pick a destination in the chip above, or start from the QR plate on the door where you are standing.</p>
+    <div class="quick" id="quick-picks"></div>
+    <a class="btn btn-hud btn-block" href="#scan">SCAN A QR &rarr;</a>
+  </div>
+
+  <div class="hud-bottom" id="hud-bottom" hidden>
+    <div class="minimap">
+      <div class="minimap-head"><span class="label hud">Plan</span><span id="mm-left" class="mono">0 m left</span></div>
+      <svg id="mini-plan" viewBox="0 0 1000 640"></svg>
+    </div>
+    <div class="instr">
+      <div class="instr-row">
+        <svg id="turn-glyph" class="turn-glyph" viewBox="0 0 48 48"><path d="M24 6 44 40 24 31 4 40Z" fill="#2fe2e6"/></svg>
+        <div class="instr-copy">
+          <p class="label hud" id="step-count">Step 1</p>
+          <p class="instr-text" id="instr-text">Head from Main Lobby</p>
+          <p class="mono tiny" id="instr-landmark">LANDMARK: —</p>
+        </div>
+        <div class="instr-num">
+          <p class="mono big hud" id="step-meters">0<span class="unit"> m</span></p>
+          <p class="mono tiny" id="step-eta">ETA 1 min</p>
+        </div>
+      </div>
+      <div class="bar"><i id="bar-fill"></i></div>
+    </div>
+  </div>
+
+  <div id="ar-arrived" class="ar-arrived" hidden>
+    <div class="arrive-card">
+      <p class="label hud">You have arrived</p>
+      <p class="display display-sm" id="arrive-name">Room 104</p>
+      <div class="arrive-grid">
+        <div><span class="label">Code</span><span class="mono" id="arrive-code">R104</span></div>
+        <div><span class="label">Floor</span><span class="mono" id="arrive-floor">Ground Floor</span></div>
+        <div><span class="label">Building</span><span class="mono" id="arrive-building">Main Building</span></div>
+        <div><span class="label">Distance</span><span class="mono" id="arrive-dist">0 m</span></div>
+      </div>
+      <p class="muted-light" id="arrive-desc"></p>
+      <p class="mono hud tiny" id="arrive-hours"></p>
+      <div class="cta">
+        <button class="btn btn-outline-light" id="arrive-replay">REPLAY ROUTE</button>
+        <button class="btn btn-hud" id="arrive-new">NEW DESTINATION</button>
+        <a class="btn btn-outline-light" href="#directory">DIRECTORY</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SCAN ============================ -->
+<section id="scan" class="view scan-view">
+  <img src="../images/hallway.jpg" alt="" class="scan-bg" />
+  <div class="scan-scrim"></div>
+
+  <div class="hud-top">
+    <a class="btn btn-navy" href="#home">&larr; Back</a>
+    <div class="chip chip-static">Scan QR Code</div>
+  </div>
+
+  <div class="scan-frame" aria-hidden="true">
+    <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <span class="scanline"></span>
+  </div>
+
+  <div class="scan-bottom">
+    <p class="mono hud tracking" id="scan-status">POINT THE CAMERA AT THE QR PLATE</p>
+    <button class="btn btn-outline-light btn-sm" id="manual-toggle">NO CAMERA? PICK YOUR START POINT</button>
+    <ul id="manual-list" class="manual-list" hidden></ul>
+    <p class="tiny light-muted">QR format: <span class="mono hud">GABAY:&lt;CODE&gt;</span> · every scan is logged</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot-grid">
+    <div>
+      <p class="display display-sm">GABAY</p>
+      <p class="muted-light">An augmented reality assistant for information and campus navigation. Pilot: Main Building ground floor — 15 locations, 11 waypoints, a QR plate on every door.</p>
+    </div>
+    <div>
+      <p class="label hud">How it works</p>
+      <ol class="foot-list">
+        <li>Scan the QR at the door</li>
+        <li>Pick your destination</li>
+        <li>Follow the chevrons</li>
+        <li>Arrive at the room</li>
+      </ol>
+    </div>
+    <div>
+      <p class="label hud">System files</p>
+      <ul class="foot-list mono">
+        <li><a href="index.html">index.html</a></li>
+        <li><a href="styles.css">styles.css</a></li>
+        <li><a href="app.js">app.js</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="foot-base mono">GABAY © 2026 · CAMPUS SERVICES DIVISION · BUILD 1.0.4</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
